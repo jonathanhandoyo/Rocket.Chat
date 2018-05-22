@@ -48,9 +48,9 @@ export function leave(type, rid, name) {
 			Meteor.call('leaveRoom', rid, function(err) {
 				if (err) {
 					modal.open({
+						type: 'error',
 						title: t('Warning'),
 						text: handleError(err, false),
-						type: 'warning',
 						html: false
 					});
 				} else {
