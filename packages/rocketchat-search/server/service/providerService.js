@@ -17,9 +17,10 @@ class SearchProviderService {
 	 * @param cb a possible callback if provider is active or not (currently not in use)
 	 */
 	use(id) {
-
 		return new Promise((resolve, reject) => {
-			if (!this.providers[id]) { throw new Error(`provider ${ id } cannot be found`); }
+			if (!this.providers[id]) {
+				throw new Error(`provider ${ id } cannot be found`);
+			}
 
 			let reason = 'switch';
 
@@ -32,9 +33,7 @@ class SearchProviderService {
 			const stopProvider = () => {
 				return new Promise((resolve, reject) => {
 					if (this.activeProvider) {
-
 						SearchLogger.debug(`Stopping provider '${ this.activeProvider.key }'`);
-
 						this.activeProvider.stop(resolve, reject);
 					} else {
 						resolve();
@@ -44,23 +43,20 @@ class SearchProviderService {
 
 			stopProvider().then(() => {
 				this.activeProvider = undefined;
-
 				SearchLogger.debug(`Start provider '${ id }'`);
 
 				try {
-
-					this.providers[id].run(reason).then(() => {
-						this.activeProvider = this.providers[id];
-						resolve();
-					}, reject);
-
+					this.providers[id]
+						.run(reason)
+						.then(() => {
+							this.activeProvider = this.providers[id];
+							resolve();
+						}, reject);
 				} catch (e) {
 					reject(e);
 				}
 			}, reject);
-
 		});
-
 	}
 
 	/**
@@ -79,22 +75,24 @@ class SearchProviderService {
 
 		const providers = this.providers;
 
-		//add settings for admininistration
-		RocketChat.settings.addGroup('Search', function() {
+		//add settings for administration
+		RocketChat.settings.addGroup('Search', () => {
 
 			const self = this;
 
 			self.add('Search.Provider', 'defaultProvider', {
 				type: 'select',
-				values: Object.keys(providers).map((key) => { return {key, i18nLabel: providers[key].i18nLabel}; }),
+				values: Object.keys(providers).map((key) => {
+					return {key, i18nLabel: providers[key].i18nLabel};
+				}),
 				public: true,
 				i18nLabel: 'Search_Provider'
 			});
 
 			Object.keys(providers)
 				.filter((key) => providers[key].settings && providers[key].settings.length > 0)
-				.forEach(function(key) {
-					self.section(providers[key].i18nLabel, function() {
+				.forEach((key) => {
+					self.section(providers[key].i18nLabel, () => {
 						providers[key].settings.forEach((setting) => {
 
 							const _options = {
@@ -118,25 +116,21 @@ class SearchProviderService {
 		//add listener to react on setting changes
 		const configProvider = _.debounce(Meteor.bindEnvironment(() => {
 			const providerId = RocketChat.settings.get('Search.Provider');
-
 			if (providerId) {
 				this.use(providerId);//TODO do something with success and errors
 			}
-
 		}), 1000);
 
 		RocketChat.settings.get(/^Search\./, configProvider);
 	}
-
 }
 
 export const searchProviderService = new SearchProviderService();
 
-Meteor.startup(() => {
-	searchProviderService.start();
-});
+Meteor.startup(() => searchProviderService.start());
 
 Meteor.methods({
+
 	/**
 	 * Search using the current search provider and check if results are valid for the user. The search result has
 	 * the format {messages:{start:0,numFound:1,docs:[{...}]},users:{...},rooms:{...}}
@@ -146,13 +140,11 @@ Meteor.methods({
 	 * @returns {*}
 	 */
 	'rocketchatSearch.search'(text, context, payload) {
-
 		return new Promise((resolve, reject) => {
 
 			payload = payload !== null ? payload : undefined;//TODO is this cleanup necessary?
 
 			try {
-
 				if (!searchProviderService.activeProvider) {
 					throw new Error('Provider currently not active');
 				}
@@ -177,8 +169,9 @@ Meteor.methods({
 			payload = payload !== null ? payload : undefined;//TODO is this cleanup necessary?
 
 			try {
-
-				if (!searchProviderService.activeProvider) { throw new Error('Provider currently not active'); }
+				if (!searchProviderService.activeProvider) {
+					throw new Error('Provider currently not active');
+				}
 
 				SearchLogger.debug('suggest: ', `\n\tText:${ text }\n\tContext:${ JSON.stringify(context) }\n\tPayload:${ JSON.stringify(payload) }`);
 
@@ -199,7 +192,9 @@ Meteor.methods({
 	 * @returns {*}
 	 */
 	'rocketchatSearch.getProvider'() {
-		if (!searchProviderService.activeProvider) { return undefined; }
+		if (!searchProviderService.activeProvider) {
+			return undefined;
+		}
 
 		return {
 			key: searchProviderService.activeProvider.key,

@@ -103,25 +103,11 @@ class ChatpalProvider extends SearchProvider {
 		});
 	}
 
-	get i18nLabel() {
-		return 'Chatpal Provider';
-	}
-
-	get iconName() {
-		return 'chatpal-logo-icon-darkblue';
-	}
-
-	get resultTemplate() {
-		return 'ChatpalSearchResultTemplate';
-	}
-
-	get suggestionItemTemplate() {
-		return 'ChatpalSuggestionItemTemplate';
-	}
-
-	get supportsSuggestions() {
-		return this._settings.get('SuggestionEnabled');
-	}
+	get i18nLabel() { return 'Chatpal Provider'; }
+	get iconName() { return 'chatpal-logo-icon-darkblue'; }
+	get resultTemplate() { return 'ChatpalSearchResultTemplate'; }
+	get suggestionItemTemplate() { return 'ChatpalSuggestionItemTemplate'; }
+	get supportsSuggestions() { return this._settings.get('SuggestionEnabled'); }
 
 	/**
 	 * indexing for messages, rooms and users
@@ -135,12 +121,12 @@ class ChatpalProvider extends SearchProvider {
 		}
 
 		switch (name) {
-			case 'message.save': return this.index.indexDoc('message', payload);
-			case 'user.save': return this.index.indexDoc('user', payload);
-			case 'room.save': return this.index.indexDoc('room', payload);
-			case 'message.delete': return this.index.removeDoc('message', value);
-			case 'user.delete': return this.index.removeDoc('user', value);
-			case 'room.delete': return this.index.removeDoc('room', value);
+			case 'message.save': 	return this.index.indexDoc('message', payload);
+			case 'user.save': 		return this.index.indexDoc('user', payload);
+			case 'room.save': 		return this.index.indexDoc('room', payload);
+			case 'message.delete': 	return this.index.removeDoc('message', value);
+			case 'user.delete': 	return this.index.removeDoc('user', value);
+			case 'room.delete': 	return this.index.removeDoc('room', value);
 		}
 
 		return true;
@@ -155,7 +141,6 @@ class ChatpalProvider extends SearchProvider {
 	_checkForClear(reason) {
 
 		if (reason === 'startup') { return false; }
-
 		if (reason === 'switch') { return true; }
 
 		return this._indexConfig.backendtype !== this._settings.get('Backend') ||
@@ -172,12 +157,14 @@ class ChatpalProvider extends SearchProvider {
 	_parseHeaders() {
 		const headers = {};
 		const sh = this._settings.get('HTTP_Headers').split('\n');
-		sh.forEach(function(d) {
+
+		sh.forEach(d => {
 			const ds = d.split(':');
 			if (ds.length === 2 && ds[0].trim() !== '') {
 				headers[ds[0]] = ds[1];
 			}
 		});
+
 		return headers;
 	}
 
@@ -192,19 +179,20 @@ class ChatpalProvider extends SearchProvider {
 	_ping(config, resolve, reject, timeout = 5000) {
 
 		const maxTimeout = 200000;
-
 		const stats = Index.ping(config);
 
 		if (stats) {
 			ChatpalLogger.debug('ping was successfull');
 			resolve({config, stats});
 		} else {
-
 			ChatpalLogger.warn(`ping failed, retry in ${ timeout } ms`);
 
-			this._pingTimeout = Meteor.setTimeout(() => {
-				this._ping(config, resolve, reject, Math.min(maxTimeout, 2*timeout));
-			}, timeout);
+			this._pingTimeout = Meteor.setTimeout(
+				() => {
+					this._ping(config, resolve, reject, Math.min(maxTimeout, 2*timeout));
+				},
+				timeout
+			);
 		}
 
 	}
@@ -253,7 +241,6 @@ class ChatpalProvider extends SearchProvider {
 
 			this._ping(config, resolve, reject);
 		});
-
 	}
 
 	/**
